@@ -3,6 +3,7 @@ const { Telegraf, Extra  } = require('telegraf');
 const { exec } = require('child_process');
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
+const maxCoins = 1000000000
 
 //Connect to DB
 async function Main() {
@@ -161,7 +162,7 @@ async function Main() {
     bot.hears('/addcoins', ctx => {
         ctx.replyWithHTML(`Try <code>/addcoins [amount]</code>, \nExample: <code>/addcoins 99</code>`).catch(function(e){})
     })
-    bot.hears(new RegExp(/\/addcoins\s(\d{1,30})/s), async (ctx) => {
+    bot.hears(new RegExp(/\/addcoins\s(\d{1,9})/s), async (ctx) => {
         console.log("ADDCOINS RUN")
         //USER HAS INIT
         const res = await User.findOne({ id: ctx.from.id})
@@ -169,6 +170,12 @@ async function Main() {
             const user = res
             const mySafeURL = user.safeurl_wallet
             const amount = ctx.update.message.text.split(" ")[1]
+
+            if(parseInt(amount) > maxCoins) {
+                ctx.replyWithHTML('Exceeding maximum top-up! Try to be less greedy.').catch(function(e){})
+                return
+            }
+
             exec(`safe wallet create --preload ${amount+1} --test-coins --json`, (error, stdout, stderr) => {
                 if (error) {
                     console.log(`error: ${error.message}`);
