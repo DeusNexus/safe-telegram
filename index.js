@@ -53,8 +53,14 @@ async function Main() {
             "pk_wallet": pk,
             "sk_wallet": sk
         }
+
         User.create(uObj, (res, err) => {
-            console.log("User Created")
+            if(err) {
+                console.error(err)
+            } else if (res) {
+                console.log("User Created")
+
+            }
         })
     }
 
