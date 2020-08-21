@@ -20,9 +20,9 @@ const dogCommand = require('./handlers/dogCommand')
 const state = {
     maxCoins: 1000000000,
     initMessage: "To start using this bot, please do /init first!",
-    example1: "safe://hnyynyqwcnqeh4s5ycmc6d35fq8p8gq7wyyxn9mnhtc8r757kttxkwfokobnc",
-    example2: "safe://hbhydynydpfangy59jsqicmpgnqy1a9mf7ywjqiqtjque9fh6xap98jdaa",
-    exampleSafeWallet: "safe://hbyyyybmyhqirrht8hntpej17jdxdmar4pwnkery77wbf14msdbwqs1kt1"
+    example1: "safe://hnyynychskg1j78tzh3t817weh87hkswecjpj8jo5qaoncy4d1o8gapwnebnc",
+    example2: "safe://hbhydydycu61k75sz7m4ehh7z9hichttfdz9gjxuxzst4spf8nqrcpt4on",
+    exampleSafeWallet: "safe://hbyyyybf1mmxt3hk31artyzt1m9pqrss53merqoi8aacpp66y4a8fa6cxr"
 }
 
 //Connect to DB
@@ -32,7 +32,7 @@ async function Main() {
     const bot = TelegramBot()
 
     //Just welcome messaeg
-    bot.start((ctx) => ctx.reply('Welcome to the Safenetwork Wallet Bot!'))
+    bot.start((ctx) => ctx.reply('Welcome to the SafeNetwork Wallet Bot!'))
 
     //Needs more info
     bot.command('help', ctx => {
