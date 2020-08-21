@@ -3,6 +3,7 @@ const { Telegraf, Extra  } = require('telegraf');
 const { exec } = require('child_process');
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
+const { isNumber } = require('util');
 const maxCoins = 1000000000
 
 //Connect to DB
@@ -13,6 +14,13 @@ async function Main() {
       })
       .then( () => console.log("Connected to DB!") )
       .catch(e => console.error(e) )
+
+    //Create Bot Instance
+    const bot = new Telegraf(process.env.BOT_TOKEN, {
+        username: 'SafeNetworkWallet_bot',
+        channelMode: false
+    })
+    console.log("Telegram Bot Instance created!")
 
     //Mongoose Model
     const Schema = mongoose.Schema;
@@ -29,12 +37,6 @@ async function Main() {
         date: { type: Date, default: Date.now }
     });
     const User = mongoose.model('ModelName', userSchema);
-
-    //Create Bot Instance
-    const bot = await new Telegraf(process.env.BOT_TOKEN, {
-        username: 'SafeNetworkWallet_bot',
-        channelMode: false
-    })
 
     function initUser(ctx, safeurl, pk, sk) {
         const { id, first_name, is_bot, language_code } = ctx.update.message.from
@@ -176,6 +178,11 @@ async function Main() {
                 return
             }
 
+            if(!isNumber(amount)) {
+                ctx.replyWithHTML('I hope you learned in school what a number is, try again.')
+                return
+            }
+
             exec(`safe wallet create --preload ${amount+1} --test-coins --json`, (error, stdout, stderr) => {
                 if (error) {
                     console.log(`error: ${error.message}`);
@@ -233,10 +240,15 @@ async function Main() {
                 nickname = '@'+ctx.from.username
             }
             if(receiver.id > 0){
+                if(!isNumber(amount)) {
+                    ctx.replyWithHTML('I hope you learned in school what a number is, try again.')
+                    return
+                }
+
                 exec(`safe keys transfer --from ${user.sk_wallet} --to ${toSafeURL} ${amount} --json`, (error, stdout, stderr) => {
                     if (error) {
                         console.log(`error: ${error.message}`);
-                        ctx.replyWithHTML('The SAFE URL doesnt work!').catch(function(e){})
+                        ctx.replyWithHTML(`You don't have that many safecoins!`).catch(function(e){})
                         return;
                     }
                     if (stderr) {
@@ -265,7 +277,7 @@ async function Main() {
     bot.hears('/tip', ctx => {
         ctx.replyWithHTML(`Try <code>/tip [amount]</code> while replying to someones message, \n<i>this user already needs to have a SAFE Wallet</i> , e.g. <code>/tip 20</code>`).catch(function(e){})
     })
-    bot.hears(new RegExp(/\/tip\s(\d{1,30})/s), async (ctx) => {
+    bot.hears(new RegExp(/\/tip\s(\d{1,9})/s), async (ctx) => {
         console.log("TIP RUN")
         //USER HAS ACCOUNT?
         const res_sender = await User.findOne({ id: ctx.from.id})
@@ -288,22 +300,27 @@ async function Main() {
             if(res_receiver) {
                 const receiver = res_receiver
                 //FIND USER ID, CHECK IF IN USERIDS (ALREADY DONE), IF SO SEARCH SAFEURL
-                exec(`safe keys transfer --from ${sender.sk_wallet} --to ${receiver.safeurl_wallet} ${amount} --json`, (error, stdout, stderr) => {
-                    if (error) {
-                        console.log(`error: ${error.message}`);
-                        ctx.replyWithHTML('Unable to tip person').catch(function(e){})
-                        return;
-                    }
-                    if (stderr) {
-                        console.log(`stderr: ${stderr}`);
-                        ctx.replyWithHTML('Unable to tip person').catch(function(e){})
-                        return;
-                    }
-                    console.log(`stdout: ${stdout}`);
-                    // const obj = JSON.parse(stdout)
-                    ctx.replyWithHTML(`You <b>tipped</b> <i>${nicknameReceiver}</i> a total of <code>${amount}</code> <b>SAFE Coins</b> to his/her wallet!`).catch(function(e){})
-                    ctx.telegram.sendMessage(id, `You <b>received</b> <code>${amount}</code> <b>SAFE Coins</b> as a tip from ${nicknameSender}!`, {parse_mode: 'HTML'}).catch(function(e){})
-                });            
+                if(!isNumber(amount)) {
+                    ctx.replyWithHTML('I hope you learned in school what a number is, try again.')
+                    return
+                }
+                    exec(`safe keys transfer --from ${sender.sk_wallet} --to ${receiver.safeurl_wallet} ${amount} --json`, (error, stdout, stderr) => {
+                        if (error) {
+                            console.log(`error: ${error.message}`);
+                            ctx.replyWithHTML(`You don't have that many safecoins!`).catch(function(e){})
+                            return;
+                        }
+                        if (stderr) {
+                            console.log(`stderr: ${stderr}`);
+                            ctx.replyWithHTML('Unable to tip person').catch(function(e){})
+                            return;
+                        }
+                        console.log(`stdout: ${stdout}`);
+                        // const obj = JSON.parse(stdout)
+                        ctx.replyWithHTML(`You <b>tipped</b> <i>${nicknameReceiver}</i> a total of <code>${amount}</code> <b>SAFE Coins</b> to his/her wallet!`).catch(function(e){})
+                        ctx.telegram.sendMessage(id, `You <b>received</b> <code>${amount}</code> <b>SAFE Coins</b> as a tip from ${nicknameSender}!`, {parse_mode: 'HTML'}).catch(function(e){})
+                    }); 
+
             } else {
                 //NOT IN DB
                 ctx.replyWithHTML(`The person you try to tip (${nickname}) has not yet initialized a personal SAFE Wallet on this bot!`).catch(function(e){})
