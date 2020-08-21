@@ -335,8 +335,8 @@ bot.hears(new RegExp(/\/keypair/s), async (ctx) => {
 
 bot.hears('/cat', ctx => {
     ctx.replyWithHTML(`Try <code>/cat [safe://someurl]</code>, `+
-    `\nExample 1: <code>/cat safe://hnyynyq6co39jq3cqq6s15dr7w4uh9hdn5yznr4mg99sjbn8dwj85if3okbnc</code>`+
-    `\nExample 2: <code>/cat safe://safe://hbhydyna4s34u75d31cdqqgg8kmpmpid7jq7daihgdrrtpeqyhqbf838id</code>`)
+    `\nExample 1: <code>/cat safe://hnyynype8maxgk58gic4iz5c8ebbksoukpeztpz1g7jxxm9t3wkfsrouegbnc</code>`+
+    `\nExample 2: <code>/cat safe://hbhydyds3dsm1ozpnzc5i6n6iesye838yo1qt4753euwh4drzwz57btn8k</code>`)
 })
 bot.hears(new RegExp(/\/cat\ssafe:\/\/(.*)/s), ctx => {
     //filter for exact NRS format
@@ -391,8 +391,8 @@ bot.hears(new RegExp(/\/cat\ssafe:\/\/(.*)/s), ctx => {
 
 bot.hears('/dog', ctx => {
     ctx.replyWithHTML(`Try <code>/dog [safe://someurl]</code>, `+
-    `\nExample 1: <code>/dog safe://hnyynyq6co39jq3cqq6s15dr7w4uh9hdn5yznr4mg99sjbn8dwj85if3okbnc</code>`+
-    `\nExample 2: <code>/dog safe://safe://hbhydyna4s34u75d31cdqqgg8kmpmpid7jq7daihgdrrtpeqyhqbf838id</code>`)
+    `\nExample 1: <code>/dog safe://hnyynype8maxgk58gic4iz5c8ebbksoukpeztpz1g7jxxm9t3wkfsrouegbnc</code>`+
+    `\nExample 2: <code>/dog safe://hbhydyds3dsm1ozpnzc5i6n6iesye838yo1qt4753euwh4drzwz57btn8k</code>`)
 })
 bot.hears(new RegExp(/\/dog\ssafe:\/\/(.*)/s), ctx => {
     //filter for exact NRS format
