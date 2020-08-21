@@ -22,7 +22,7 @@ const state = {
     initMessage: "To start using this bot, please do /init first!",
     example1: "safe://hnyynychskg1j78tzh3t817weh87hkswecjpj8jo5qaoncy4d1o8gapwnebnc",
     example2: "safe://hbhydydycu61k75sz7m4ehh7z9hichttfdz9gjxuxzst4spf8nqrcpt4on",
-    exampleSafeWallet: "safe://hbyyyybf1mmxt3hk31artyzt1m9pqrss53merqoi8aacpp66y4a8fa6cxr"
+    exampleSafeWallet: "safe://hbyyyybemhgmeeq9wrfb9g8pjunsrezbqiaba9rpxfm6rjdb6xkia4tyis"
 }
 
 //Connect to DB
@@ -61,9 +61,9 @@ async function Main() {
             `\n\n<b>Keypair</b> - Obtain keypairs from the CLI.`+
             `\nUsage: <code>/keypair</code>`+
             `\n\n<b>Cat</b> - View Folders/Files with cat, without arguments will display a help message.`+
-            `\nUsage: <code>/cat [safe-url from folder or file]</code>`+
+            `\nUsage: <code>/cat [NRS-URL or XOR-URL]</code>`+
             `\n\n<b>Dog</b> - Inspect Folders/Files with dog, without arguments will display a help message.`+
-            `\nUsage: <code>/dog [safe-url from folder or file]</code>`+
+            `\nUsage: <code>/dog [NRS-URL or XOR-URL]</code>`+
             `\n\n<b>More Information</b>:`+
             `\n<code>SafeNetwork Forum</code> - https://safenetforum.org/`+
             `\n<code>SafeNetwork Site</code> - https://safenetwork.org/`+
@@ -127,7 +127,7 @@ async function Main() {
 
     //Cat folders/files on the baby-fleming local network
     bot.hears('/cat', ctx => {
-        ctx.replyWithHTML(`Try <code>/cat [safe://someurl]</code>, `+
+        ctx.replyWithHTML(`Try <code>/cat [safe://NRS-URL or XOR-URL]</code>, `+
         `\nExample 1: <code>/cat ${state.example1}</code>`+
         `\nExample 2: <code>/cat ${state.example2}</code>`).catch(function(e){})
     })
@@ -138,7 +138,7 @@ async function Main() {
 
     //Dog folders/files on the baby-fleming local network
     bot.hears('/dog', ctx => {
-        ctx.replyWithHTML(`Try <code>/dog [safe://someurl]</code>, `+
+        ctx.replyWithHTML(`Try <code>/dog [safe://NRS-URL or XOR-URL]</code>, `+
         `\nExample 1: <code>/dog ${state.example1}</code>`+
         `\nExample 2: <code>/dog ${state.example2}</code>`).catch(function(e){})
     })
