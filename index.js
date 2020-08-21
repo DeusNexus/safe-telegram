@@ -1,486 +1,150 @@
+//DOTENV
 require('dotenv').config();
-const { Telegraf, Extra  } = require('telegraf');
-const { exec } = require('child_process');
-const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
-const { isNumber } = require('util');
-const maxCoins = 1000000000
+
+//API
+const Database = require('./api/Database');
+const TelegramBot = require('./api/Bot');
+
+//Commands
+const initCommand = require('./handlers/initCommand');
+const secretCommand = require('./handlers/secretCommand');
+const balanceCommand = require('./handlers/balanceCommand');
+const addcoinsCommand = require('./handlers/addcoinsCommand');
+const sendCommand = require('./handlers/sendCommand');
+const tipCommand = require('./handlers/tipCommand');
+const keypairCommand = require('./handlers/keypairCommand');
+const catCommand = require('./handlers/catCommand')
+const dogCommand = require('./handlers/dogCommand')
+
+//STATE CONSTANTS
+const state = {
+    maxCoins: 1000000000,
+    initMessage: "To start using this bot, please do /init first!",
+    example1: "safe://hnyynyqwcnqeh4s5ycmc6d35fq8p8gq7wyyxn9mnhtc8r757kttxkwfokobnc",
+    example2: "safe://hbhydynydpfangy59jsqicmpgnqy1a9mf7ywjqiqtjque9fh6xap98jdaa",
+    exampleSafeWallet: "safe://hbyyyybmyhqirrht8hntpej17jdxdmar4pwnkery77wbf14msdbwqs1kt1"
+}
 
 //Connect to DB
 async function Main() {
-    await mongoose.connect(process.env.DB_URI, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true
-      })
-      .then( () => console.log("Connected to DB!") )
-      .catch(e => console.error(e) )
+    //Wait for DB to Load and then create a Telegram Bot instance
+    await Database()
+    const bot = TelegramBot()
 
-    //Create Bot Instance
-    const bot = new Telegraf(process.env.BOT_TOKEN, {
-        username: 'SafeNetworkWallet_bot',
-        channelMode: false
-    })
-    console.log("Telegram Bot Instance created!")
-
-    //Mongoose Model
-    const Schema = mongoose.Schema;
-    const userSchema = new Schema({
-        first_name: String,
-        username: { type:String, default:''},
-        id: Number,
-        is_bot: Boolean,
-        language_code: String,
-        type: String,
-        safeurl_wallet: String,
-        pk_wallet: String,
-        sk_wallet: String,
-        date: { type: Date, default: Date.now }
-    });
-    const User = mongoose.model('ModelName', userSchema);
-
-    function initUser(ctx, safeurl, pk, sk) {
-        const { id, first_name, is_bot, language_code } = ctx.update.message.from
-        const { type } = ctx.update.message.chat
-        let username = ""
-        if(ctx.update.message.from.username) {
-            username = ctx.update.message.from.username
-        }
-        const uObj = {
-            "first_name": first_name,
-            "username": username,
-            "id": id,
-            "is_bot": is_bot,
-            "language_code": language_code,
-            "type": type,
-            "safeurl_wallet": safeurl,
-            "pk_wallet": pk,
-            "sk_wallet": sk
-        }
-
-        User.create(uObj, (res, err) => {
-            if(err) {
-                console.error(err)
-            } else if (res) {
-                console.log("User Created")
-
-            }
-        })
-    }
-
-    const initMessage = "To start using this bot, please do /init first!"
-
+    //Just welcome messaeg
     bot.start((ctx) => ctx.reply('Welcome to the Safenetwork Wallet Bot!'))
 
+    //Needs more info
     bot.command('help', ctx => {
-        ctx.replyWithHTML('Help Instructions...')
+        console.log("HELP RUN")
+        ctx.replyWithHTML(
+            `<b>You will find an help overview about all the various commands and more.</b>`+
+            `\n\n⚠️ <u>Important Notes</u>:`+
+            `\nThe <code>/cat [url]</code> and <code>/dog [url]</code> are currently unable to view files!`+
+            `\n\n<b>Commands</b>:`+
+            `\n<b>Start</b> - Automatically run when you restart bot and displays a welcome message.`+
+            `\nUsage: <code>/start</code>`+
+            `\n\n<b>Help</b> - Shows the current help message.`+
+            `\nUsage: <code>/help</code>`+
+            `\n\n<b>Init</b> - Initializes a wallet for Telegram User which can be used to add/send/receive/tip coins.`+
+            `\nUsage: <code>/init</code>`+
+            `\n\n<b>Secret</b> - Shows the users wallet details including; Wallet SAFE-URL, Public Key and Secret Key.`+
+            `\nUsage: <code>/secret</code>`+
+            `\n\n<b>Balance</b> - Shows the current Safecoin balance of the user's wallet.`+
+            `\nUsage: <code>/balance</code>`+
+            `\n\n<b>Addcoins</b> - Add test coins to your wallet!`+
+            `\nUsage: <code>/addcoins [amount]</code>`+
+            `\n\n<b>Send</b> - Use to send Safecoins to other SAFE-URL addresses, without arguments it will display a help message.`+
+            `\nUsage: <code>/send [amount] [safe-wallet url]</code>`+
+            `\n\n<b>Tip</b> - Use to send a tip to a reply of a user who also has a SAFE Wallet, without arguments it will display a help message.`+
+            `\nUsage: <code>/tip [amount]</code>`+
+            `\n\n<b>Keypair</b> - Obtain keypairs from the CLI.`+
+            `\nUsage: <code>/keypair</code>`+
+            `\n\n<b>Cat</b> - View Folders/Files with cat, without arguments will display a help message.`+
+            `\nUsage: <code>/cat [safe-url from folder or file]</code>`+
+            `\n\n<b>Dog</b> - Inspect Folders/Files with dog, without arguments will display a help message.`+
+            `\nUsage: <code>/dog [safe-url from folder or file]</code>`+
+            `\n\n<b>More Information</b>:`+
+            `\n<code>SafeNetwork Forum</code> - https://safenetforum.org/`+
+            `\n<code>SafeNetwork Site</code> - https://safenetwork.org/`+
+            `\n<code>GitHub</code> - https://github.com/DeusNexus/safe-telegram`+
+            `\n\n<i>Please report any bugs/typos to @ThreeSteps</i>`,
+            { disable_web_page_preview: true }
+            ).catch(function(e){})
     })
 
+    //Initialize User
     bot.hears(new RegExp(/\/init/s), async ctx => {
         console.log("INIT RUN")
-        const res = await User.findOne({ id: ctx.from.id })
-        console.log("DB RES:",res)
-        //USER IN DB?
-        if(!res) {
-            exec(`safe keys create --test-coins --preload 500 --json`, (error, stdout, stderr) => {
-                if (error) {
-                    console.log(`error: ${error.message}`);
-                    return;
-                }
-                if (stderr) {
-                    console.log(`stderr: ${stderr}`);
-                    return;
-                }
-                console.log(`stdout: ${stdout}`);
-                const obj = JSON.parse(stdout)
-                const safeurl = obj[0]
-                const pk = obj[1].pk
-                const sk = obj[1].sk
-                initUser(ctx,safeurl, pk, sk)
-                ctx.replyWithPhoto({ source: 'init.png' }, Extra.caption(
-                    `You <b>successfully</b> initialized your personal <b>SAFE Wallet</b>!`+
-                    `\nYour <b>secret data</b>; SAFE URL, Public Key and Secret Key are stored under the command /secret!`+
-                    `\n\nThe address is preloaded with 500 SAFE coins to experiment with, you can add more using the command <code>/addcoins [amount]</code>.`+
-                    `\n\nFor more details on how to use this bot view <code>/help</code>.`).HTML()
-                ).catch(function(e){})
-            });
-        } else {
-            //USER ALREADY INIT
-            ctx.replyWithPhoto({ source: 'init.png' }, Extra.caption('Your SAFE wallet is already initialized, you can only do this once!').HTML()).catch(function(e){})
-        }
+        initCommand(ctx,state)
     })
 
+    //Show user secrets
     bot.hears(new RegExp(/\/secret/s), async ctx => {
-        const res = await User.findOne({ id: ctx.from.id})
-        if(res) {
-            const user = res
-            console.log("USER:",user)
-            text =  (`<b>These are the details for your personal SAFE Wallet, keep them SAFE!</b>`+
-            `\n\n<b>Your SAFE Wallet URL:</b>`+
-            `\n<code>${user.safeurl_wallet}</code>`+
-            `\n\n<b>Public Key:</b> \n<code>${user.pk_wallet}</code>`+
-            `\n\n<b>Secret Key:</b> \n<code>${user.sk_wallet}</code>`+
-            `\n\n<i>This is running on a local baby-flemming test network, future version will connect to shared-section, `+
-            `you can still send you coins to other users using this bot.</i>`)
-            ctx.replyWithPhoto({source: 'safe.jpg'}, Extra.caption(text).HTML()).catch(function(e){})
-        } else {
-            console.log("USER:",res)
-            ctx.replyWithHTML(initMessage).catch(function(e){})
-        }
+        console.log("SECRET RUN")
+        secretCommand(ctx,state)
     })
 
+    //Show user balance
     bot.hears(new RegExp(/\/balance/s), async (ctx) => {
         console.log("BALANCE RUN")
-        const res = await User.findOne({ id: ctx.from.id})
-        //USER HAS INIT
-        if(res) {
-            const user = res
-            exec(`safe keys balance --sk ${user.sk_wallet} --json`, (error, stdout, stderr) => {
-                if (error) {
-                    console.log(`error: ${error.message}`);
-                    ctx.replyWithHTML(
-                        `Unable to check balance!`
-                    ).catch(function(e){})
-                    return;
-                }
-                if (stderr) {
-                    console.log(`stderr: ${stderr}`);
-                    ctx.replyWithHTML(
-                        `Unable to check balance!`
-                    ).catch(function(e){})
-                    return;
-                }
-                console.log(`stdout: ${stdout}`);
-                // const obj = JSON.parse(stdout)
-                ctx.replyWithHTML(
-                `Your SAFE Wallet balance is: \n<code>${stdout}</code>`
-                ).catch(function(e){})
-            });
-        } else {
-            //NO INIT
-            ctx.replyWithHTML(initMessage).catch(function(e){})
-        }
+        balanceCommand(ctx,state)
     })
 
+    //Allow user to add coins to his balance
     bot.hears('/addcoins', ctx => {
         ctx.replyWithHTML(`Try <code>/addcoins [amount]</code>, \nExample: <code>/addcoins 99</code>`).catch(function(e){})
     })
     bot.hears(new RegExp(/\/addcoins\s(\d{1,9})/s), async (ctx) => {
         console.log("ADDCOINS RUN")
-        //USER HAS INIT
-        const res = await User.findOne({ id: ctx.from.id})
-        if(res) {
-            const user = res
-            const mySafeURL = user.safeurl_wallet
-            const amount = ctx.update.message.text.split(" ")[1]
-
-            if(parseInt(amount) > maxCoins) {
-                ctx.replyWithHTML('Exceeding maximum top-up! Try to be less greedy.').catch(function(e){})
-                return
-            }
-
-            if(!isNumber(amount)) {
-                ctx.replyWithHTML('I hope you learned in school what a number is, try again.')
-                return
-            }
-
-            exec(`safe wallet create --preload ${amount+1} --test-coins --json`, (error, stdout, stderr) => {
-                if (error) {
-                    console.log(`error: ${error.message}`);
-                    ctx.replyWithHTML(
-                        `Unable to add coins!`
-                    ).catch(function(e){})
-                    return;
-                }
-                if (stderr) {
-                    console.log(`stderr: ${stderr}`);
-                    ctx.replyWithHTML(
-                        `Unable to add coins!`
-                    ).catch(function(e){})
-                    return;
-                }
-                console.log(`stdout: ${stdout}`);
-                const response = JSON.parse(stdout)
-                console.log(response)
-                exec(`safe wallet transfer --from ${response[0]} --to ${mySafeURL} ${amount} --json`, (error, stdout, stderr) => {
-                    if (error) {
-                        console.log(`error: ${error.message}`);
-                        return;
-                    }
-                    if (stderr) {
-                        console.log(`stderr: ${stderr}`);
-                        return;
-                    }
-                    console.log(`stdout: ${stdout}`);
-
-                    ctx.replyWithHTML(
-                        `You added <code>${amount}</code> <b>SAFE Coins</b> to your wallet! \n<b>TX_ID:</b><code> ${stdout}</code>`
-                    ).catch(function(e){})
-                })
-            });
-        } else {
-            //NO INIT
-            ctx.replyWithHTML(initMessage).catch(function(e){})
-        }
+        addcoinsCommand(ctx,state)
     })
 
+    //Send coins to another user providing the amount and the safeurl
     bot.hears('/send', ctx => {
-        ctx.replyWithHTML(`Try <code>/send [amount] [Receive SAFE URL]</code>, \nExample: <code>/send 25 safe://hbyyyybkyosnrn1ir1fqcxks9r16xe83dgjimxdo6p18wugfqff9yy6p3w</code>`).catch(function(e){})
+        ctx.replyWithHTML(`Try <code>/send [amount] [Receive SAFE URL]</code>, \nExample: <code>/send 25 ${state.exampleSafeWallet}</code>`)
+        .catch(function(e){})
     })
     bot.hears(new RegExp(/\/send\s(\d{1,30})\s(safe:\/\/.*)/s), async (ctx) => {
         console.log("SEND RUN")
-        //USER HAS INIT ACCOUNT?
-        const res = await User.findOne({ id: ctx.from.id})
-        if(res){
-            const toSafeURL = ctx.update.message.text.split(" ")[2] //"safe://hbyyyybnyxpfwt6k66kdsbmat8rp4o5qkhxcyoko1bxrhw4bocdkbe9k5w"
-            const amount = ctx.update.message.text.split(" ")[1]
-            const user = res
-            const receiver = await User.findOne({ safeurl_wallet: toSafeURL})
-            let nickname = ctx.from.first_name
-            if(ctx.from.username) {
-                nickname = '@'+ctx.from.username
-            }
-            if(receiver.id > 0){
-                if(!isNumber(amount)) {
-                    ctx.replyWithHTML('I hope you learned in school what a number is, try again.')
-                    return
-                }
-
-                exec(`safe keys transfer --from ${user.sk_wallet} --to ${toSafeURL} ${amount} --json`, (error, stdout, stderr) => {
-                    if (error) {
-                        console.log(`error: ${error.message}`);
-                        ctx.replyWithHTML(`You don't have that many safecoins!`).catch(function(e){})
-                        return;
-                    }
-                    if (stderr) {
-                        console.log(`stderr: ${stderr}`);
-                        ctx.replyWithHTML('The SAFE URL doesnt work!').catch(function(e){})
-                        return;
-                    }
-                    console.log(`stdout: ${stdout}`);
-                    ctx.replyWithHTML(
-                    `You just sent <code>${amount}</code> SAFE Coin(s) to the following <i>Safe-URL</i>:`+
-                    `\n\n<code>${toSafeURL}</code>`+
-                    `\n\n<b>TX_ID:</b> <code>${stdout}</code>`
-                    ).catch(function(e){})
-                    //RECEIVER ID
-                    ctx.telegram.sendMessage(receiver.id, `You <b>received</b> <code>${amount}</code> SAFE Coin(s) from ${nickname}!`, {parse_mode: 'HTML'}).catch(function(e){})
-                });    
-            } else {
-                ctx.replyWithHTML('The SAFE URL you try to sent to is not connected to any user!').catch(function(e){})
-            }
-        } else {
-            //USER HAS NOT INIT
-            ctx.replyWithHTML(initMessage).catch(function(e){})
-        }
+        sendCommand(ctx,state)
     })
 
+    //Send a tip by replying to user message with command, the user you reply to already needs to have a wallet/initialized.
     bot.hears('/tip', ctx => {
         ctx.replyWithHTML(`Try <code>/tip [amount]</code> while replying to someones message, \n<i>this user already needs to have a SAFE Wallet</i> , e.g. <code>/tip 20</code>`).catch(function(e){})
     })
     bot.hears(new RegExp(/\/tip\s(\d{1,9})/s), async (ctx) => {
         console.log("TIP RUN")
-        //USER HAS ACCOUNT?
-        const res_sender = await User.findOne({ id: ctx.from.id})
-        if(res_sender) {
-            //GET CHAT MEMBER REPLY
-            const { id } = ctx.message.reply_to_message.from
-            const res_receiver = await User.findOne({ id: id})
-            let nicknameReceiver = ctx.message.reply_to_message.from.first_name
-            let nicknameSender = ctx.from.first_name
-            if(ctx.message.reply_to_message.from.username) {
-                nickname = '@'+ctx.message.reply_to_message.from.username
-            }
-            if(ctx.from.username) {
-                nicknameSender = '@'+ctx.from.username
-            }
-            const amount = ctx.update.message.text.split(" ")[1]
-            const sender = res_sender
-            console.log(id, nickname, amount)
-            //RECEIVER TG ID IN DATABASE WITH SAFE ADDRESS?
-            if(res_receiver) {
-                const receiver = res_receiver
-                //FIND USER ID, CHECK IF IN USERIDS (ALREADY DONE), IF SO SEARCH SAFEURL
-                if(!isNumber(amount)) {
-                    ctx.replyWithHTML('I hope you learned in school what a number is, try again.')
-                    return
-                }
-                    exec(`safe keys transfer --from ${sender.sk_wallet} --to ${receiver.safeurl_wallet} ${amount} --json`, (error, stdout, stderr) => {
-                        if (error) {
-                            console.log(`error: ${error.message}`);
-                            ctx.replyWithHTML(`You don't have that many safecoins!`).catch(function(e){})
-                            return;
-                        }
-                        if (stderr) {
-                            console.log(`stderr: ${stderr}`);
-                            ctx.replyWithHTML('Unable to tip person').catch(function(e){})
-                            return;
-                        }
-                        console.log(`stdout: ${stdout}`);
-                        // const obj = JSON.parse(stdout)
-                        ctx.replyWithHTML(`You <b>tipped</b> <i>${nicknameReceiver}</i> a total of <code>${amount}</code> <b>SAFE Coins</b> to his/her wallet!`).catch(function(e){})
-                        ctx.telegram.sendMessage(id, `You <b>received</b> <code>${amount}</code> <b>SAFE Coins</b> as a tip from ${nicknameSender}!`, {parse_mode: 'HTML'}).catch(function(e){})
-                    }); 
-
-            } else {
-                //NOT IN DB
-                ctx.replyWithHTML(`The person you try to tip (${nickname}) has not yet initialized a personal SAFE Wallet on this bot!`).catch(function(e){})
-            }
-        } else {
-            //NOT INIT
-            ctx.replyWithHTML(initMessage).catch(function(e){})
-        }
+        tipCommand(ctx,state)
     })
 
+    //Obtain keypairs
     bot.hears(new RegExp(/\/keypair/s), async (ctx) => {
         console.log("KEYPAIR RUN")
-        exec(`safe keypair --json`, (error, stdout, stderr) => {
-            if (error) {
-                console.log(`error: ${error.message}`);
-                ctx.replyWithHTML(
-                    `Unable to create keypair!`
-                ).catch(function(e){})
-                return;
-            }
-            if (stderr) {
-                console.log(`stderr: ${stderr}`);
-                ctx.replyWithHTML(
-                    `Unable to create keypair!`
-                ).catch(function(e){})
-                return;
-            }
-            console.log(`stdout: ${stdout}`);
-            const obj = stdout.split(" ")
-            ctx.replyWithHTML(
-            `<b>Key Pair Generated!</b>`+
-            `\n\n<b>Public Key:</b> `+
-            `\n<code>${obj[3]}</code>`+
-            `\n\n<b>Secret Key:</b> `+
-            `\n<code>${obj[6]}</code>`
-            ).catch(function(e){})
-        });
+        keypairCommand(ctx,state)
     })
 
-    const example1 = "safe://hnyynyqwcnqeh4s5ycmc6d35fq8p8gq7wyyxn9mnhtc8r757kttxkwfokobnc"
-    const example2 = "safe://hbhydynydpfangy59jsqicmpgnqy1a9mf7ywjqiqtjque9fh6xap98jdaa"
-
+    //Cat folders/files on the baby-fleming local network
     bot.hears('/cat', ctx => {
         ctx.replyWithHTML(`Try <code>/cat [safe://someurl]</code>, `+
-        `\nExample 1: <code>/cat ${example1}</code>`+
-        `\nExample 2: <code>/cat ${example2}</code>`).catch(function(e){})
+        `\nExample 1: <code>/cat ${state.example1}</code>`+
+        `\nExample 2: <code>/cat ${state.example2}</code>`).catch(function(e){})
     })
     bot.hears(new RegExp(/\/cat\ssafe:\/\/(.*)/s), ctx => {
-        //filter for exact NRS format
-        const param = ctx.update.message.text.split(" ")[1]
         console.log("CAT RUN")
-
-        exec(`safe cat ${param} --json`, (error, stdout, stderr) => {
-            if (error) {
-                console.log(`error: ${error.message}`);
-                ctx.replyWithHTML(
-                    `No Content Found at <code>${param}</code>!`
-                ).catch(function(e){})
-                return;
-            }
-            if (stderr) {
-                console.lYog(`stderr: ${stderr}`);
-                ctx.replyWithHTML(
-                    `Error!`
-                ).catch(function(e){})
-                return;
-            }
-
-            console.log(`stdout: ${stdout}`);
-
-            try {
-                if(Array.isArray(JSON.parse(stdout))) {
-                    const url = JSON.parse(stdout)[0]
-                    const data = JSON.parse(stdout)[1]
-                    const key = Object.keys(data)
-                    const values = data[key]
-            
-                    ctx.replyWithHTML(
-                        `<b>Files</b> of <b>FilesContainer</b> at <code>${url}</code>\n`+
-                        `\n<b>Name:</b> <code>${key}</code>`+
-                        `\n<b>Type:</b> <code>${values["type"]}</code>`+
-                        `\n<b>Size:</b> <code>${values["size"]}</code>`+
-                        `\n<b>isModified:</b> <code>${values["o_created"]===values["modified"]?'Yes':'No'}</code>`+
-                        `\n<b>File Link:</b> <code>${values["link"]}</code>`
-                    ).catch(function(e){})
-                } else {
-                    ctx.replyWithHTML(`<b>[File Content]:</b> <code>${stdout}</code>`).catch(function(e){})
-                }
-            } catch(e) {
-                ctx.replyWithHTML(`<b>[File Content]:</b> <code>${stdout}</code>`).catch(function(e){})
-            }
-        });
-
+        catCommand(ctx,state)
     })
 
+    //Dog folders/files on the baby-fleming local network
     bot.hears('/dog', ctx => {
         ctx.replyWithHTML(`Try <code>/dog [safe://someurl]</code>, `+
-        `\nExample 1: <code>/dog ${example1}</code>`+
-        `\nExample 2: <code>/dog ${example2}</code>`).catch(function(e){})
+        `\nExample 1: <code>/dog ${state.example1}</code>`+
+        `\nExample 2: <code>/dog ${state.example2}</code>`).catch(function(e){})
     })
     bot.hears(new RegExp(/\/dog\ssafe:\/\/(.*)/s), ctx => {
-        //filter for exact NRS format
-        const param = ctx.update.message.text.split(" ")[1]
         console.log("DOG RUN")
-
-        exec(`safe dog ${param} --json`, (error, stdout, stderr) => {
-            if (error) {
-                console.log(`error: ${error.message}`);
-                ctx.replyWithHTML(
-                    `No Content Found at <code>${param}</code>!`
-                ).catch(function(e){})
-                return;
-            }
-            if (stderr) {
-                console.lYog(`stderr: ${stderr}`);
-                ctx.replyWithHTML(
-                    `Error!`
-                ).catch(function(e){})
-                return;
-            }
-            console.log(`stdout: ${stdout}`);
-
-            const url = JSON.parse(stdout)[0]
-            const data = JSON.parse(stdout)[1][0]
-
-            const keyType = Object.keys(data)[0]
-            console.log(keyType)
-
-            if(keyType === 'FilesContainer') {
-                const filesContainer = data["FilesContainer"]
-                console.log(url, filesContainer)
-
-                ctx.replyWithHTML(
-                    `<b>+= Files Container =+</b>`+
-                    `\n<b>XOR-URL:</b> <code>${filesContainer["xorurl"]}</code>`+
-                    `\n<b>Version:</b> <code>${filesContainer["version"]}</code>`+
-                    `\n<b>Type Tag:</b> <code>${filesContainer["type_tag"]}</code>`+
-                    `\n<b>Native Data Type:</b> <code>${filesContainer["data_type"]}</code>`+
-                    `\n<b>Native data XOR-URL:</b> <code>${filesContainer["resolved_from"]}</code>`
-                ).catch(function(e){})
-
-            } else if (keyType === 'PublicImmutableData') {
-                const publicImmutableData = data["PublicImmutableData"]
-                console.log(url, publicImmutableData)
-
-                ctx.replyWithHTML(
-                    `<b>-= File =-</b>`+
-                    `\n<b>XOR-URL:</b> <code>${publicImmutableData["xorurl"]}</code>`+
-                    `\n<b>Data:</b> <code>${JSON.stringify(publicImmutableData["data"],null,1)}</code>`+
-                    `\n<b>Media Type:</b> <code>${publicImmutableData["media_type"]}</code>`+
-                    `\n<b>Metadata:</b> <code>${publicImmutableData["metadata"]}</code>`+
-                    `\n<b>Resolved From:</b> <code>${publicImmutableData["resolved_from"]}</code>`
-                ).catch(function(e){})
-
-            } else {
-                ctx.reply("No Data for this type!").catch(function(e){})
-            }
-
-        });
-
+        dogCommand(ctx,state)
     })
 
     bot.launch()
