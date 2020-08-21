@@ -22,7 +22,7 @@ module.exports = async function tipCommand(ctx,state) {
         if(ctx.from.username) {
             nicknameSender = '@'+ctx.from.username
         }
-        const amount = ctx.update.message.text.split(" ")[1]
+        const amount = +ctx.update.message.text.split(" ")[1]
         const sender = res_sender
         console.log(id, nickname, amount)
 
@@ -46,7 +46,7 @@ module.exports = async function tipCommand(ctx,state) {
                         return;
                     }
                     console.log(`stdout: ${stdout}`);
-                    // const obj = JSON.parse(stdout)
+                    const obj = JSON.parse(stdout)
                     ctx.replyWithHTML(
                         `You <b>tipped</b> <i>${nicknameReceiver}</i> a total of <code>${amount}</code> <b>SAFE Coins</b> to his/her wallet!`
                         ).catch(function(e){})
