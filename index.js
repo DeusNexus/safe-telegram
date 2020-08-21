@@ -360,10 +360,13 @@ async function Main() {
         });
     })
 
+    const example1 = "safe://hnyynyqwcnqeh4s5ycmc6d35fq8p8gq7wyyxn9mnhtc8r757kttxkwfokobnc"
+    const example2 = "safe://hbhydynydpfangy59jsqicmpgnqy1a9mf7ywjqiqtjque9fh6xap98jdaa"
+
     bot.hears('/cat', ctx => {
         ctx.replyWithHTML(`Try <code>/cat [safe://someurl]</code>, `+
-        `\nExample 1: <code>/cat safe://hnyynype8maxgk58gic4iz5c8ebbksoukpeztpz1g7jxxm9t3wkfsrouegbnc</code>`+
-        `\nExample 2: <code>/cat safe://hbhydyds3dsm1ozpnzc5i6n6iesye838yo1qt4753euwh4drzwz57btn8k</code>`).catch(function(e){})
+        `\nExample 1: <code>/cat ${example1}</code>`+
+        `\nExample 2: <code>/cat ${example2}</code>`).catch(function(e){})
     })
     bot.hears(new RegExp(/\/cat\ssafe:\/\/(.*)/s), ctx => {
         //filter for exact NRS format
@@ -415,8 +418,8 @@ async function Main() {
 
     bot.hears('/dog', ctx => {
         ctx.replyWithHTML(`Try <code>/dog [safe://someurl]</code>, `+
-        `\nExample 1: <code>/dog safe://hnyynype8maxgk58gic4iz5c8ebbksoukpeztpz1g7jxxm9t3wkfsrouegbnc</code>`+
-        `\nExample 2: <code>/dog safe://hbhydyds3dsm1ozpnzc5i6n6iesye838yo1qt4753euwh4drzwz57btn8k</code>`).catch(function(e){})
+        `\nExample 1: <code>/dog ${example1}</code>`+
+        `\nExample 2: <code>/dog ${example2}</code>`).catch(function(e){})
     })
     bot.hears(new RegExp(/\/dog\ssafe:\/\/(.*)/s), ctx => {
         //filter for exact NRS format
