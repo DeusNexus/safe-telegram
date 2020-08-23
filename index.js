@@ -1,6 +1,6 @@
 //DOTENV
 require('dotenv').config();
-const fs = require('fs')
+const config = require('./config.json')
 
 //API
 const Database = require('./api/Database');
@@ -27,19 +27,7 @@ let state = {
 }
 
 function setConfigFile() {
-    fs.readFile('config.json', (err,data) => {
-        if(err) {
-            console.log("Error Setting Examples")
-        } else {
-            const obj = JSON.parse(data)
-            console.log(obj)
-            state.maxCoins = data.maxCoins
-            state.initMessage = data.initMessage
-            state.example1 = data.example1
-            state.example2 = data.example2
-            state.exampleSafeWallet = data.exampleSafeWallet
-        }
-    })
+    state = config
 }
 
 //Connect to DB
