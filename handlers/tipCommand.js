@@ -17,14 +17,13 @@ module.exports = async function tipCommand(ctx,state) {
         let nicknameReceiver = ctx.message.reply_to_message.from.first_name
         let nicknameSender = ctx.from.first_name
         if(ctx.message.reply_to_message.from.username) {
-            nickname = '@'+ctx.message.reply_to_message.from.username
+            nicknameReceiver = '@'+ctx.message.reply_to_message.from.username
         }
         if(ctx.from.username) {
             nicknameSender = '@'+ctx.from.username
         }
         const amount = +ctx.update.message.text.split(" ")[1]
         const sender = res_sender
-        console.log(id, nickname, amount)
 
         //RECEIVER TG ID IN DATABASE WITH SAFE ADDRESS?
         if(res_receiver) {
@@ -48,7 +47,7 @@ module.exports = async function tipCommand(ctx,state) {
                     console.log(`stdout: ${stdout}`);
                     const obj = JSON.parse(stdout)
                     ctx.replyWithHTML(
-                        `You <b>tipped</b> <i>${nicknameReceiver}</i> a total of <code>${amount}</code> <b>SAFE Coins</b> to his/her wallet!`
+                        `You <b>tipped</b> <i>${nicknameReceiver}</i> a total of <code>${amount}</code> <b>SAFE Coins</b> to their wallet!`
                         ).catch(function(e){})
                     ctx.telegram.sendMessage(
                         id, 
@@ -59,7 +58,7 @@ module.exports = async function tipCommand(ctx,state) {
 
         } else {
             //USER NOT IN DB
-            ctx.replyWithHTML(`The person you try to tip (${nickname}) has not yet initialized a personal SAFE Wallet on this bot!`)
+            ctx.replyWithHTML(`The person you try to tip (${nicknameReceiver}) has not yet initialized a personal SAFE Wallet on this bot!`)
             .catch(function(e){})
         }
 

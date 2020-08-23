@@ -11,11 +11,11 @@ module.exports = async function sendCommand(ctx,state) {
         const toSafeURL = ctx.update.message.text.split(" ")[2]
         const amount = +ctx.update.message.text.split(" ")[1]
         const receiver = await User.findOne({ safeurl_wallet: toSafeURL})
-        let nickname = ctx.from.first_name
+        let nicknameSender = ctx.from.first_name
         let nickReceiver = receiver.first_name
 
         if(ctx.from.username) {
-            nickname = '@'+ctx.from.username
+            nicknameSender = '@'+ctx.from.username
         }
         if(receiver.username){
             nickReceiver = '@' + receiver.username
@@ -52,7 +52,7 @@ module.exports = async function sendCommand(ctx,state) {
                 //Send to Receiver
                 ctx.telegram.sendMessage(
                     receiver.id, 
-                    `You <b>received</b> <code>${amount}</code> SAFE Coin(s) from ${nickname}!`, 
+                    `You <b>received</b> <code>${amount}</code> SAFE Coin(s) from ${nicknameSender}!`, 
                     {parse_mode: 'HTML'}
                 ).catch(function(e){})
 

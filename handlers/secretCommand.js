@@ -19,8 +19,11 @@ module.exports = async function secretCommand(ctx,state) {
         ctx.replyWithPhoto(
             {source: 'safe.jpg'}, 
             Extra.caption(text)
-            .HTML())
-            .catch(function(e){}
+            .HTML()
+        ).catch(function(e){
+            ctx.replyWithHTML(text+`\n\n*The Chat You Are In Doesn't Allow Images!*`).catch(function(e){})
+        }
+
         )
 
     } else {
