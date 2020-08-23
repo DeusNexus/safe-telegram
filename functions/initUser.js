@@ -21,7 +21,7 @@ module.exports = function initUser(ctx, safeurl, pk, sk) {
         "sk_wallet": sk
     }
 
-    User.create(uObj, (res, err) => {
+    User.updateOne({ id: ctx.from.id }, { upsert: true },uObj, (res, err) => {
         if(err) {
             console.error(err)
         } else if (res) {
