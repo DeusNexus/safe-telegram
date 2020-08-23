@@ -1,0 +1,9 @@
+safe auth logout
+safe auth stop
+safe vault killall
+safe auth clear
+safe config clear
+safe auth install
+safe vault install
+safe auth restart
+safe vault run-baby-fleming --testing
