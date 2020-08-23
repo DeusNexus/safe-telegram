@@ -1,5 +1,6 @@
 //DOTENV
 require('dotenv').config();
+const fs = require('fs')
 
 //API
 const Database = require('./api/Database');
@@ -17,7 +18,7 @@ const catCommand = require('./handlers/catCommand')
 const dogCommand = require('./handlers/dogCommand')
 
 //STATE CONSTANTS
-const state = {
+let state = {
     maxCoins: 1000000000,
     initMessage: "To start using this bot, please do /init first!",
     example1: "safe://hnyynychskg1j78tzh3t817weh87hkswecjpj8jo5qaoncy4d1o8gapwnebnc",
@@ -25,8 +26,27 @@ const state = {
     exampleSafeWallet: "safe://hbyyyybemhgmeeq9wrfb9g8pjunsrezbqiaba9rpxfm6rjdb6xkia4tyis"
 }
 
+function setConfigFile() {
+    fs.readFile('config.json', (err,data) => {
+        if(err) {
+            console.log("Error Setting Examples")
+        } else {
+            const obj = JSON.parse(data)
+            console.log(obj)
+            state.maxCoins = data.maxCoins
+            state.initMessage = data.initMessage
+            state.example1 = data.example1
+            state.example2 = data.example2
+            state.exampleSafeWallet = data.exampleSafeWallet
+        }
+    })
+}
+
 //Connect to DB
 async function Main() {
+    //SET CONFIG
+    setConfigFile()
+    
     //Wait for DB to Load and then create a Telegram Bot instance
     await Database()
     const bot = TelegramBot()
