@@ -28,8 +28,8 @@ module.exports = async function dogCommand(ctx) {
         const keyType = Object.keys(data)[0]
         console.log(keyType)
 
-        if(keyType === 'FilesContainer') {
-            const filesContainer = data["FilesContainer"]
+        if(keyType === 'NrsMapContainer') {
+            const filesContainer = data["NrsMapContainer"]
             console.log(url, filesContainer)
 
             ctx.replyWithHTML(
@@ -41,8 +41,8 @@ module.exports = async function dogCommand(ctx) {
                 `\n<b>Native data XOR-URL:</b> <code>${filesContainer["resolved_from"]}</code>`
             ).catch(function(e){})
 
-        } else if (keyType === 'PublicImmutableData') {
-            const publicImmutableData = data["PublicImmutableData"]
+        } else if (keyType === 'PublicBlob') {
+            const publicImmutableData = data["PublicBlob"]
             console.log(url, publicImmutableData)
 
             ctx.replyWithHTML(

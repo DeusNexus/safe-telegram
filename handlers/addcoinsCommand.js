@@ -14,12 +14,13 @@ module.exports = async function addcoinsCommand(ctx,state) {
             return
         }
 
-        if(!isNumber(amount)) {
+        if(!typeof(amount)==='number') {
             ctx.replyWithHTML('I hope you learned in school what a number is, try again.')
             return
         }
 
         //EXEC 1
+        try {
         exec(`safe wallet create --preload ${amount+1} --test-coins --json`, (error, stdout, stderr) => {
             if (error) {
                 console.log(`error: ${error.message}`);
@@ -38,7 +39,7 @@ module.exports = async function addcoinsCommand(ctx,state) {
             // console.log(`stdout: ${stdout}`);
 
             const response = JSON.parse(stdout)
-            // console.log(response)
+            console.log(response)
 
             //EXEC 2
             exec(`safe wallet transfer --from ${response[0]} --to ${mySafeURL} ${amount} --json`, (error, stdout, stderr) => {
@@ -59,6 +60,10 @@ module.exports = async function addcoinsCommand(ctx,state) {
             //EXEC 2 END
 
         });
+    
+        } catch(e) {
+            console.log(e)
+        }
         //EXEC 1 END
         
     } else {

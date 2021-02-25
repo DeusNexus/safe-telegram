@@ -25,17 +25,19 @@ module.exports = async function tipCommand(ctx,state) {
         const amount = +ctx.update.message.text.split(" ")[1]
         const sender = res_sender
 
+        // console.log(res_sender)
         //RECEIVER TG ID IN DATABASE WITH SAFE ADDRESS?
         if(res_receiver) {
             const receiver = res_receiver
             //FIND USER ID, CHECK IF IN USERIDS (ALREADY DONE), IF SO SEARCH SAFEURL
-            if(!isNumber(amount)) {
+            if(!typeof(amount)==='number') {
                 ctx.replyWithHTML('I hope you learned in school what a number is, try again.')
                 return
             }
                 exec(`safe keys transfer --from ${sender.sk_wallet} --to ${receiver.safeurl_wallet} ${amount} --json`, (error, stdout, stderr) => {
                     if (error) {
                         console.log(`error: ${error.message}`);
+                        if(error.message.includes('SameSenderAndRecipient')) return ctx.replyWithHTML(`You cannot tip yourself!`).catch(function(e){})
                         ctx.replyWithHTML(`You don't have that many safecoins!`).catch(function(e){})
                         return;
                     }

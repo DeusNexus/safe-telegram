@@ -13,5 +13,5 @@ const userSchema = new Schema({
     sk_wallet: String,
     date: { type: Date, default: Date.now }
 });
-const User = mongoose.model('ModelName', userSchema);
+const User = mongoose.model('User', userSchema);
 module.exports = User

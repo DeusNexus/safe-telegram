@@ -21,8 +21,8 @@ module.exports = async function initCommand(ctx) {
             // console.log(`stdout: ${stdout}`);
             const obj = JSON.parse(stdout)
             const safeurl = obj[0]
-            const pk = obj[1].pk
-            const sk = obj[1].sk
+            const pk = obj[1][0]
+            const sk = obj[1][1]
 
             initUser(ctx,safeurl, pk, sk)
             

@@ -11,6 +11,8 @@ module.exports = async function sendCommand(ctx,state) {
         const toSafeURL = ctx.update.message.text.split(" ")[2]
         const amount = +ctx.update.message.text.split(" ")[1]
         const receiver = await User.findOne({ safeurl_wallet: toSafeURL})
+
+        if(!receiver) return ctx.replyWithHTML('No user found for that safe wallet.')
         let nicknameSender = ctx.from.first_name
         let nickReceiver = receiver.first_name
 
@@ -23,7 +25,7 @@ module.exports = async function sendCommand(ctx,state) {
 
         if(receiver && receiver.id > 0){
 
-            if(!isNumber(amount)) {
+            if(!typeof(amount)==='number') {
                 ctx.replyWithHTML('I hope you learned in school what a number is, try again.').catch(function(e){})
                 return
             }
@@ -31,6 +33,7 @@ module.exports = async function sendCommand(ctx,state) {
             exec(`safe keys transfer --from ${user.sk_wallet} --to ${toSafeURL} ${amount} --json`, (error, stdout, stderr) => {
                 if (error) {
                     console.log(`error: ${error.message}`);
+                    if(error.message.contains('Transfer(SameSenderAndRecipient)')) return ctx.replyWithHTML(`You cannot send to yourself!`).catch(function(e){})
                     ctx.replyWithHTML(`You don't have that many Safecoins!`).catch(function(e){})
                     return;
                 }

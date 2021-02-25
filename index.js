@@ -137,7 +137,8 @@ async function Main() {
     bot.hears('/cat', ctx => {
         ctx.replyWithHTML(`Try <code>/cat [safe://NRS-URL or XOR-URL]</code>, `+
         `\nExample 1: <code>/cat ${state.example1}</code>`+
-        `\nExample 2: <code>/cat ${state.example2}</code>`).catch(function(e){})
+        `\nExample 2: <code>/cat ${state.example2}</code>`+
+        `\nExample 3: <code>/cat ${state.example3}</code>`).catch(function(e){})
     })
     bot.hears(new RegExp(/\/cat\ssafe:\/\/(.*)/s), ctx => {
         console.log("CAT RUN")
@@ -148,7 +149,8 @@ async function Main() {
     bot.hears('/dog', ctx => {
         ctx.replyWithHTML(`Try <code>/dog [safe://NRS-URL or XOR-URL]</code>, `+
         `\nExample 1: <code>/dog ${state.example1}</code>`+
-        `\nExample 2: <code>/dog ${state.example2}</code>`).catch(function(e){})
+        `\nExample 2: <code>/dog ${state.example2}</code>`+
+        `\nExample 3: <code>/dog ${state.example3}</code>`).catch(function(e){})
     })
     bot.hears(new RegExp(/\/dog\ssafe:\/\/(.*)/s), ctx => {
         console.log("DOG RUN")

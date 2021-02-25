@@ -1,7 +1,8 @@
 {
     "maxCoins": 1000000000,
     "initMessage": "To start using this bot, please do /init first!",
-    "example1": "safe://hnyynychskg1j78tzh3t817weh87hkswecjpj8jo5qaoncy4d1o8gapwnebnc",
-    "example2": "safe://hbhydydycu61k75sz7m4ehh7z9hichttfdz9gjxuxzst4spf8nqrcpt4on",
-    "exampleSafeWallet": "safe://hbyyyybemhgmeeq9wrfb9g8pjunsrezbqiaba9rpxfm6rjdb6xkia4tyis"
+    "example1": "safe://site/index.html",
+    "example2": "safe://site/style.css",
+    "example3": "safe://site",
+    "exampleSafeWallet": "safe://hyryyyy8srswjrq6nsuoy5j747nu97xf5rwijrhf5my5iao484w1wyq5ryw"
 }
